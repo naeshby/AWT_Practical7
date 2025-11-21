@@ -77,11 +77,15 @@ const animateSkills = () => {
         const screenPosition = window.innerHeight / 1.3;
 
         if (barPosition < screenPosition) {
-            const width = bar.style.width;
-            bar.style.width = '0';
-            setTimeout(() => {
-                bar.style.width = width;
-            }, 100);
+            // Get the target width from inline style or computed style
+            const targetWidth = bar.style.width || window.getComputedStyle(bar).width;
+            if (!bar.hasAttribute('data-animated')) {
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = targetWidth;
+                    bar.setAttribute('data-animated', 'true');
+                }, 100);
+            }
         }
     });
 };
@@ -118,12 +122,48 @@ contactForm.addEventListener('submit', (e) => {
 
     // Basic validation
     if (name && email && subject && message) {
-        alert('Thank you for your message! I will get back to you soon.');
+        // Show success message
+        showNotification('Thank you for your message! I will get back to you soon.', 'success');
         contactForm.reset();
     } else {
-        alert('Please fill in all fields.');
+        // Show error message
+        showNotification('Please fill in all fields.', 'error');
     }
 });
+
+// Toast notification function
+function showNotification(message, type) {
+    // Remove existing notification if any
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        padding: 15px 25px;
+        background: ${type === 'success' ? '#50c878' : '#ff6b6b'};
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
 // Add intersection observer for fade-in animations
 const observerOptions = {
